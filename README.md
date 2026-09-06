@@ -90,7 +90,7 @@ the artifact is architectural. That asymmetry is the whole design: the feature
 extractor is the durable asset, and the classifier is 3,585 parameters.
 
 ```bash
-pip install scikit-learn onnx          # not runtime dependencies
+pip install -r requirements-dev.txt    # training deps, not runtime
 python scripts/train.py --real 'masters/*.wav' --ai 'generated/*.mp3' \
                         --out models/mine
 ```
@@ -159,7 +159,7 @@ the extractor has not drifted — there is a golden feature vector pinning the
 STFT port — but cannot prove detection. That measurement is yours to run.
 
 ```bash
-pip install -r requirements.txt pytest httpx && python -m pytest tests -q
+pip install -r requirements-dev.txt && python -m pytest tests -q
 ```
 
 ## Licence
