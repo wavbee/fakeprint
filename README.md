@@ -82,6 +82,34 @@ Separately: a full **Encodec round-trip of a real master still scores 0.0%**.
 The artifact is generator-specific. "It passed through a neural codec" is not
 the signal, so the detector does not fire on one.
 
+## Retraining it
+
+The bundled weights cover Suno ≤ 5 and Udio ≤ 1.5. Newer generators change
+their upsamplers, so the classifier goes stale while the **method does not** —
+the artifact is architectural. That asymmetry is the whole design: the feature
+extractor is the durable asset, and the classifier is 3,585 parameters.
+
+```bash
+pip install scikit-learn onnx          # not runtime dependencies
+python scripts/train.py --real 'masters/*.wav' --ai 'generated/*.mp3' \
+                        --out models/mine
+```
+
+It prints a **held-out** evaluation and **refuses to write a model that fails
+the floors** — 90% accuracy, and a false-positive rate at or under 2%, which is
+stricter because a false positive tells a real musician they faked their own
+record. `--force` overrides. The written config records the corpus size and the
+held-out numbers, so a model always carries its own provenance.
+
+⚠️ It cannot detect a mislabelled corpus. Two arbitrary halves of the same
+population score ~0.4 accuracy and are correctly refused, but a corpus where
+"real" quietly contains generated tracks will train happily and evaluate well.
+The labels are yours to get right.
+
+Bump `MODEL_VERSION` in `app/detector.py` before serving a retrained model. A
+score from one build is not comparable to a score from another, and any
+threshold tuned against one does not transfer.
+
 ## What it cannot tell you
 
 **These numbers are not a generalisation estimate.** The four Suno tracks come
