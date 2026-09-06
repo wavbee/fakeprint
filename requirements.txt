@@ -1,0 +1,8 @@
+# Deliberately small. The model is 15 KB of logistic regression; shipping torch
+# to run it would be three orders of magnitude of dependency for no gain.
+numpy==2.3.*
+scipy==1.16.*
+onnxruntime==1.23.*
+fastapi==0.115.*
+uvicorn[standard]==0.32.*
+python-multipart==0.0.*

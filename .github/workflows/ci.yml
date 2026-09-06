@@ -1,0 +1,37 @@
+# Public repo, so Actions minutes are free — unlike the private QC engine this
+# serves, where CI is kept deliberately minimal.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: pip install -r requirements.txt pytest httpx
+      - run: python -m pytest tests -q
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: docker build -t fakeprint .
+      # The compatibility assertion between extractor and weights only fires on
+      # first inference, so a built image that cannot score is still "green"
+      # without this.
+      - name: score a generated file end to end
+        run: |
+          docker run -d -p 8000:8000 --name fp fakeprint
+          for i in $(seq 30); do curl -sf localhost:8000/healthz && break || sleep 1; done
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          ffmpeg -v error -f lavfi -i "sine=frequency=220:duration=12" -ar 44100 /tmp/t.wav
+          curl -sf -F file=@/tmp/t.wav localhost:8000/detect/upload | tee /tmp/out.json
+          python -c "import json;d=json.load(open('/tmp/out.json'));assert d['measured'] is True, d"
