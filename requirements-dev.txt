@@ -1,0 +1,8 @@
+# Training and test dependencies. NOT installed into the runtime image — the
+# service only needs to run a 15 KB model, and shipping scikit-learn to do that
+# would be three orders of magnitude of dependency for nothing.
+-r requirements.txt
+pytest==8.*
+httpx==0.28.*
+scikit-learn==1.7.*
+onnx==1.19.*

@@ -16,7 +16,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - run: pip install -r requirements.txt pytest httpx
+      # requirements-dev pulls in onnx and scikit-learn, which the export
+      # tests need but the runtime image deliberately does not ship.
+      - run: pip install -r requirements-dev.txt
       - run: python -m pytest tests -q
 
   docker:
